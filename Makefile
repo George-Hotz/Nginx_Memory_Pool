@@ -2,7 +2,7 @@
 # https://github.com/George-Hotz/Nginx_Memory_Pool
 
 # 定义编译器
-CC=gcc
+CC=g++
 
 # 定义编译选项
 CFLAGS=-Wall -Wextra
@@ -14,17 +14,17 @@ LDFLAGS=
 TARGET=./bin/ngx_mem_pool
 
 # 定义源文件
-SOURCE = ./src/main.c ./src/ngx_alloc.c ./src/ngx_palloc.c
+SOURCE = ./src/main.cpp ./src/ngx_palloc.cpp
 
 # 默认目标
 all: $(TARGET)
 
 # 目标依赖于源文件
 $(TARGET): $(SOURCE)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
+	$(CC) -O3 $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 # 编译每个源文件为对象文件
-%.o: %.c
+%.o: %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # 清理编译生成的文件

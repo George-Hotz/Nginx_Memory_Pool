@@ -8,6 +8,13 @@
 #ifndef _NGX_CORE_H_INCLUDED_
 #define _NGX_CORE_H_INCLUDED_
 
+//C++
+#include <mutex>
+#include <atomic>  
+#include <iostream>
+#include <unordered_map>
+
+//C
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -20,8 +27,6 @@
 typedef intptr_t        ngx_int_t;
 typedef uintptr_t       ngx_uint_t;
 typedef intptr_t        ngx_flag_t;
-
-typedef struct ngx_pool_s            ngx_pool_t;
 
 #define NGX_ALIGNMENT   sizeof(unsigned long)    /* platform word */
 #define ngx_align(d, a)     (((d) + (a - 1)) & ~(a - 1))
