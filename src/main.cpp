@@ -6,7 +6,6 @@
 #include <time.h>
 #include <malloc.h>
 #include "ngx_core.h"
-#include "ngx_alloc.h"
 #include "ngx_palloc.h"
 
 #define BLOCK_SIZE 8                    //每次申请的内存大小
@@ -40,30 +39,29 @@ int main(int argc, char **argv){
     start = clock();  // 记录开始时间
 
     if(use_pool){
-        char *ptr = NULL;
+        char *ptr = nullptr;
         for(k=0; k<OUTER_CYCLE_NUM; k++){
-            ngx_pool_t *pool = ngx_create_pool(MEM_POOL_SIZE);
             for(i=0; i<INNER_CYCLE_NUM; i++){
-                ptr = ngx_palloc(pool, BLOCK_SIZE);
+                ptr = (char*)Ngx_Mem_Pool::get_instance().ngx_palloc(BLOCK_SIZE);
                 if(!ptr){
-                    printf(stderr, "ngx_palloc failed. \n");
+                    std::cerr << "ngx_palloc failed." << std::endl;
                 }else{
                     *ptr = '\0';
                     *(ptr + BLOCK_SIZE - 1) = '\0';
                 }
             }
-            ngx_destroy_pool(pool);
+            Ngx_Mem_Pool::get_instance().ngx_reset_pool();
         }
     }else{
         char *ptr[INNER_CYCLE_NUM];
         for(k=0; k<OUTER_CYCLE_NUM; k++){
             for(i=0; i<INNER_CYCLE_NUM; i++){
-                ptr[i] = malloc(BLOCK_SIZE);
-                if(!ptr){
-                    printf(stderr, "malloc failed. \n");
+                ptr[i] = (char*)malloc(BLOCK_SIZE);
+                if(!ptr[i]){
+                    std::cerr << "malloc failed." << std::endl;
                 }else{
-                    *ptr = '\0';
-                    *(ptr + BLOCK_SIZE - 1) = '\0';
+                    *ptr[i] = '\0';
+                    *(ptr[i] + BLOCK_SIZE - 1) = '\0';
                 }
             }
             for(i=0; i<INNER_CYCLE_NUM; i++){
