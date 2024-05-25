@@ -9,7 +9,7 @@
 #define _NGX_PALLOC_H_INCLUDED_
 
 #include "ngx_core.h"
-
+#include "ngx_lock.h"
 
 /*
  * NGX_MAX_ALLOC_FROM_POOL should be (ngx_pagesize - 1), i.e. 4095 on x86.
@@ -22,23 +22,24 @@
 
 #define NGX_POOL_ALIGNMENT       16
 #define NGX_MIN_POOL_SIZE                                                     \
-    ngx_align((sizeof(ngx_pool_t) + 2 * sizeof(ngx_pool_large_t)), NGX_POOL_ALIGNMENT)
+    ngx_align((sizeof(ngx_pool_t) + 2 * sizeof(ngx_large_t)), NGX_POOL_ALIGNMENT)
     
 #define ngx_free          free
 
 
+
 //大内存块
-struct ngx_pool_large_t {
-    ngx_pool_large_t     *next;            //链接下一个内存块
+struct ngx_large_t {
+    ngx_large_t          *next;            //链接下一个内存块
     void                 *alloc;           //内存地址
 };
 
 //小内存块(块大小相同)
-struct ngx_pool_small_t {
+struct ngx_small_t {
     u_char               *last;            //内存块最新的地址
     u_char               *end;             //内存块末尾的地址
     ngx_uint_t            failed;          //该内存块分配失败的次数
-    ngx_pool_small_t     *next;            //链接下一个内存块
+    ngx_small_t          *next;            //链接下一个内存块
 };
 
 
@@ -46,10 +47,9 @@ struct ngx_pool_small_t {
 struct ngx_pool_t {
     size_t                psize;           //内存的页大小         
     size_t                max;             //内存块大小判断
-    ngx_pool_small_t     *curr;            //当前小内存块地址
-    ngx_pool_small_t     *small;           //小内存块地址
-    ngx_pool_large_t     *large;           //大内存块地址
-    std::atomic<int>      ref;             //引用计数
+    ngx_small_t          *curr;            //当前小内存块地址
+    ngx_small_t          *small;           //小内存块地址
+    ngx_large_t          *large;           //大内存块地址
 };
 
 
@@ -65,11 +65,12 @@ public:
     void* ngx_pcalloc(size_t size);
 
     void ngx_reset_pool();
-    ngx_int_t ngx_pfree(void *p);
+    bool ngx_pfree(void *p);
 
 private:
     ngx_pool_t* m_pool;
-
+    ngx_lock spin_lock;
+    
 private:
     Ngx_Mem_Pool();
     ~Ngx_Mem_Pool();

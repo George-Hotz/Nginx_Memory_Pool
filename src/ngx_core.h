@@ -11,6 +11,8 @@
 //C++
 #include <mutex>
 #include <atomic>  
+#include <vector>  
+#include <thread>
 #include <cassert>
 #include <iostream>
 #include <unordered_map>
@@ -24,6 +26,7 @@
 #include <stdint.h>
 #include <string.h>
 
+using namespace std;
 
 typedef intptr_t        ngx_int_t;
 typedef uintptr_t       ngx_uint_t;
@@ -44,10 +47,6 @@ typedef intptr_t        ngx_flag_t;
 #define  NGX_DONE       -4
 #define  NGX_DECLINED   -5
 #define  NGX_ABORT      -6
-
-#define ngx_abs(value)       (((value) >= 0) ? (value) : - (value))
-#define ngx_max(val1, val2)  ((val1 < val2) ? (val2) : (val1))
-#define ngx_min(val1, val2)  ((val1 > val2) ? (val2) : (val1))
 
 
 #endif /* _NGX_CORE_H_INCLUDED_ */

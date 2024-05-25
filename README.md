@@ -1,4 +1,4 @@
-# Nginx高性能内存池组件(精简版)
+# Nginx高性能内存池组件
 * 裁剪自Nginx 1.22.1源码，裁切了其他与内存池无关的组件，
 * 实现了内存池最佳实践的demo，并对比了malloc和内存池在高并发下的性能差异。
 
@@ -26,7 +26,7 @@
 ## 版本更新说明
 * 2024/5/22（main）：完成对Nginx内存池组件的拆分，C语言版内存池
 * 2024/5/23（main_v1）：由C++重构Nginx内存池，封装成类和对应接口
-* 2024/5/24（main_v2）：优化Nginx内存池数据结构，解耦大小内存块分配（较v1提升约10%）
+* 2024/5/24（main_v2）：优化Nginx内存池数据结构，解耦大小内存块分配，加入线程同步（自旋锁）
 
 
 ## 环境要求
@@ -51,31 +51,34 @@
 
 
 ## 结果对比
-高并发下性能提升接近100%
+
 ```bash
 #main版本（C语言版本）
 George@R9000P:~/Projects/nginx/ngx_mem_pool$ ./bin/ngx_mem_pool 
 use_malloc
-CPU Time Used: 12.110623 seconds
+CPU Time Used: 12.110623 seconds #（使用malloc） 
 George@R9000P:~/Projects/nginx/ngx_mem_pool$ ./bin/ngx_mem_pool 1
 use_pool
-CPU Time Used: 6.733660 seconds
+CPU Time Used: 6.733660 seconds #（使用内存池） 
 
-#main_v1版本（C++版本）
+#main_v1版本（C++版本）无线程同步
 George@R9000P:~/Projects/nginx/ngx_mem_pool$ ./bin/ngx_mem_pool 
 use_malloc
-CPU Time Used: 11.851856 seconds
+CPU Time Used: 11.851856 seconds #（使用malloc） 
 George@R9000P:~/Projects/nginx/ngx_mem_pool$ ./bin/ngx_mem_pool 1
 use_pool
-CPU Time Used: 5.119002 seconds
+CPU Time Used: 5.119002 seconds #（使用内存池） 
 
-#main_v2版本（C++版本）
-George@R9000P:~/Projects/nginx/ngx_mem_pool$ ./bin/ngx_mem_pool 
+#main_v2版本（C++版本）有线程同步
+George@R9000P:~/Projects/nginx/ngx_mem_pool$ ./bin/demo1 
 use_malloc
-CPU Time Used: 11.670735 seconds
-George@R9000P:~/Projects/nginx/ngx_mem_pool$ ./bin/ngx_mem_pool 1
+CPU Time Used: 11.516082 seconds #（使用malloc）       
+George@R9000P:~/Projects/nginx/ngx_mem_pool$ ./bin/demo1 1
 use_pool
-CPU Time Used: 4.895433 seconds
+CPU Time Used: 9.020385 seconds #（使用内存池，互斥锁同步线程）
+George@R9000P:~/Projects/nginx/ngx_mem_pool$ ./bin/demo1 1
+use_pool
+CPU Time Used: 5.100224 seconds #（使用内存池，自旋锁同步线程）
 ```
 
 

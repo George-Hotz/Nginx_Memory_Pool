@@ -9,18 +9,17 @@
 #include "ngx_core.h"
 #include "ngx_palloc.h"
 
-#define BLOCK_SIZE 8                    //每次申请的内存大小
-#define MEM_POOL_SIZE (1024 * 4)
+#define S_BLOCK_SIZE 8                  //小内存
 
-#define INNER_CYCLE_NUM 1024             //内循环次数
-#define OUTER_CYCLE_NUM (1024 * 1024)     //外循环次数
+#define INNER_CYCLE_NUM 1024            //内循环次数
+#define OUTER_CYCLE_NUM (1024 * 16)     //外循环次数
 
 int main(int argc, char **argv){
     int i = 0, k = 0;
     int use_pool = 0;
 
     if(argc > 2){
-        printf("numbers of paramters is 1 or 2\n");
+        printf("numbers of paramters is 0 or 1\n");
         return 0;
     }
 
@@ -40,33 +39,29 @@ int main(int argc, char **argv){
     if(use_pool){
         char *ptr = nullptr;
         for(k=0; k<OUTER_CYCLE_NUM; k++){
-            for(i=0; i<INNER_CYCLE_NUM; i++){
-                ptr = (char*)Ngx_Mem_Pool::get_instance().ngx_palloc(BLOCK_SIZE);
+            for(int i=0; i<INNER_CYCLE_NUM; i++){
+                ptr = (char*)Ngx_Mem_Pool::get_instance().ngx_palloc(S_BLOCK_SIZE);
                 if(!ptr){
                     std::cerr << "ngx_palloc failed." << std::endl;
                 }else{
                     *ptr = '\0';
-                    *(ptr + BLOCK_SIZE - 1) = '\0';
+                    *(ptr + S_BLOCK_SIZE - 1) = '\0';
                 }
             }
             Ngx_Mem_Pool::get_instance().ngx_reset_pool();
         }
     }else{
-        char *ptr[INNER_CYCLE_NUM];
+        char *ptr = nullptr;
         for(k=0; k<OUTER_CYCLE_NUM; k++){
-            for(i=0; i<INNER_CYCLE_NUM; i++){
-                ptr[i] = (char*)malloc(BLOCK_SIZE);
-                if(!ptr[i]){
+            for(int i=0; i<INNER_CYCLE_NUM; i++){
+                ptr = (char*)malloc(S_BLOCK_SIZE);
+                if(!ptr){
                     std::cerr << "malloc failed." << std::endl;
                 }else{
-                    *ptr[i] = '\0';
-                    *(ptr[i] + BLOCK_SIZE - 1) = '\0';
+                    *ptr = '\0';
+                    *(ptr + S_BLOCK_SIZE - 1) = '\0';
                 }
-            }
-            for(i=0; i<INNER_CYCLE_NUM; i++){
-                if(ptr[i]){
-                    free(ptr[i]);
-                }
+                free(ptr);
             }
         }
     }

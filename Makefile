@@ -18,16 +18,21 @@ CFLAGS=-Wall -Wextra
 LDFLAGS=
 
 # 定义目标文件
-TARGET=./bin/ngx_mem_pool
+TARGET1=./bin/demo1 
+TARGET2=./bin/demo2
 
 # 定义源文件
-SOURCE = ./src/main.cpp ./src/ngx_palloc.cpp
+SOURCE1 = ./src/demo1.cpp ./src/ngx_palloc.cpp
+SOURCE2 = ./src/demo2.cpp ./src/ngx_palloc.cpp
 
 # 默认目标
-all: $(TARGET)
+all: $(TARGET1) $(TARGET2)
 
 # 目标依赖于源文件
-$(TARGET): $(SOURCE)
+$(TARGET1): $(SOURCE1)
+	$(CC) -O3 $(CFLAGS) $(LDFLAGS) -o $@ $^
+
+$(TARGET2): $(SOURCE2)
 	$(CC) -O3 $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 # 编译每个源文件为对象文件
@@ -36,7 +41,7 @@ $(TARGET): $(SOURCE)
 
 # 清理编译生成的文件
 clean:
-	rm -f $(TARGET) *.o
+	rm -f $(TARGET1) $(TARGET2) *.o
 
 # 伪目标，用于打印变量
 .PHONY: all clean
